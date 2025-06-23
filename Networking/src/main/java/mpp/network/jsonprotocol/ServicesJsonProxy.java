@@ -1,6 +1,9 @@
 package mpp.network.jsonprotocol;
 
 import com.google.gson.*;
+import mpp.model.Configuratie;
+import mpp.model.Joc;
+import mpp.model.Pozitie;
 import mpp.model.User;
 import mpp.services.AppException;
 import mpp.services.IObserver;
@@ -147,51 +150,82 @@ public class ServicesJsonProxy implements IServices {
         return response.getUsers();
     }
 
-//    @Override
-//    public Iterable<Configuratie> findAllConfiguratie() throws IOException, InterruptedException, AppException {
-//        sendRequest(JsonProtocolUtils.createGetAllConfiguratiiRequest());
-//        Response response = readResponse();
-//        if (response.getType() == ResponseType.ERROR) {
-//            throw new AppException(response.getErrorMessage());
-//        }
-//        return response.getConfiguratii();
-//    }
-//
-//    @Override
-//    public Iterable<Joc> findAllJoc() throws IOException, InterruptedException, AppException {
-//        sendRequest(JsonProtocolUtils.createGetAllJocuriRequest());
-//        Response response = readResponse();
-//        if (response.getType() == ResponseType.ERROR) {
-//            throw new AppException(response.getErrorMessage());
-//        }
-//        return response.getJocuri();
-//    }
-//
-//    @Override
-//    public Joc saveJoc(Joc joc) throws AppException, IOException, InterruptedException {
-//        sendRequest(JsonProtocolUtils.createSaveGameRequest(joc));
-//        Response response = readResponse();
-//        if (response.getType() == ResponseType.ERROR) {
-//            throw new AppException(response.getErrorMessage());
-//        }
-//        return joc;
-//    }
+    @Override
+    public Iterable<Configuratie> findAllConfiguratie() throws IOException, InterruptedException, AppException {
+        logger.info("Cerere: findAllConfiguratie");
+        sendRequest(JsonProtocolUtils.createGetAllConfiguratiiRequest());
+        Response response = readResponse();
+        if (response.getType() == ResponseType.ERROR) {
+            logger.error("Eroare în findAllConfiguratie: {}", response.getErrorMessage());
+            throw new AppException(response.getErrorMessage());
+        }
+        return response.getConfiguratii();
+    }
+
+    @Override
+    public Iterable<Joc> findAllJoc() throws IOException, InterruptedException, AppException {
+        logger.info("Cerere: findAllJoc");
+        sendRequest(JsonProtocolUtils.createGetAllJocuriRequest());
+        Response response = readResponse();
+        if (response.getType() == ResponseType.ERROR) {
+            logger.error("Eroare în findAllJoc: {}", response.getErrorMessage());
+            throw new AppException(response.getErrorMessage());
+        }
+        return response.getJocuri();
+    }
+
+    @Override
+    public Joc saveJoc(Joc joc) throws AppException, IOException, InterruptedException {
+        logger.info("Cerere: findAllConfiguratie");
+        sendRequest(JsonProtocolUtils.createSaveGameRequest(joc));
+        Response response = readResponse();
+        if (response.getType() == ResponseType.ERROR) {
+            logger.error("Eroare la salvarea jocului: {}", response.getErrorMessage());
+            throw new AppException(response.getErrorMessage());
+        }
+        return joc;
+    }
+
+
+    @Override
+    public Iterable<Pozitie> findAllPozitii() throws IOException, InterruptedException, AppException {
+        logger.info("Cerere: findAllPozitii");
+        sendRequest(JsonProtocolUtils.createGetAllPozitiiRequest());
+        Response response = readResponse();
+        if (response.getType() == ResponseType.ERROR) {
+            logger.error("Eroare în findAllPozitii: {}", response.getErrorMessage());
+            throw new AppException(response.getErrorMessage());
+        }
+        return response.getPozitii();
+    }
+
+    @Override
+    public Configuratie saveConfiguratie(Configuratie conf) throws AppException, IOException, InterruptedException {
+        logger.info("Cerere: save conf");
+        sendRequest(JsonProtocolUtils.createSaveConfiguratieRequest(conf));
+        Response response = readResponse();
+        if (response.getType() == ResponseType.ERROR) {
+            logger.error("Eroare la salvarea configuratiei: {}", response.getErrorMessage());
+            throw new AppException(response.getErrorMessage());
+        }
+        return response.getConfig();
+    }
+
 
     /* TODO 3: ADD OBSERVER UPDATES*/
     private void handleUpdate(Response response) {
-//        if (response.getType() == ResponseType.SAVE_JOC) {
-//            Joc game = response.getJoc();
-//            try {
-//                client.gameAdded(game);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        if (response.getType() == ResponseType.SAVE_JOC) {
+            Joc game = response.getJoc();
+            try {
+                client.gameAdded(game);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean isUpdate(Response response) {
-//        return response.getType() == ResponseType.SAVE_JOC;
-        return false;
+        return response.getType() == ResponseType.SAVE_JOC;
     }
 
 

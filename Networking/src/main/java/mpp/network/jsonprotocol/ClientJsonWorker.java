@@ -2,6 +2,9 @@ package mpp.network.jsonprotocol;
 
 
 import com.google.gson.*;
+import mpp.model.Configuratie;
+import mpp.model.Joc;
+import mpp.model.Pozitie;
 import mpp.model.User;
 import mpp.services.IObserver;
 import mpp.services.IServices;
@@ -79,12 +82,16 @@ public class ClientJsonWorker implements Runnable, IObserver {
                 return handleLogin(request);
             case GET_ALL_USERS:
                 return handleGetAllUsers();
-//            case GET_ALL_CONFIGURATII:
-//                return handleGetAllConfiguratii();
-//            case GET_ALL_JOCURI:
-//                return handleGetAllJocuri();
-//            case SAVE_JOC:
-//                return handleSaveJoc(request);
+            case GET_ALL_CONFIGURATII:
+                return handleGetAllConfiguratii();
+            case GET_ALL_JOCURI:
+                return handleGetAllJocuri();
+            case SAVE_JOC:
+                return handleSaveJoc(request);
+            case GET_ALL_POZITII:
+                return handleGetAllPozitii();
+            case SAVE_CONFIGURATIE:
+                return handleSaveConfiguratie(request);
             default:
                 return JsonProtocolUtils.createErrorResponse("Unknown request type: " + request.getType());
         }
@@ -126,4 +133,75 @@ public class ClientJsonWorker implements Runnable, IObserver {
             return JsonProtocolUtils.createErrorResponse(e.getMessage());
         }
     }
+
+    private Response handleGetAllConfiguratii() {
+        logger.traceEntry("handling getAllConf request");
+        try {
+            System.out.println("SERVER: Handling GET_ALL_CONFIGURATII");
+            Iterable<Configuratie> configuratii;
+            synchronized (server) {
+                configuratii = server.findAllConfiguratie();
+            }
+            return JsonProtocolUtils.createGetAllConfiguratiiResponse(configuratii);
+        } catch (Exception e) {
+            return JsonProtocolUtils.createErrorResponse(e.getMessage());
+        }
+    }
+
+    private Response handleGetAllJocuri() {
+        logger.traceEntry("handling getAllJocuri request");
+        try {
+            System.out.println("SERVER: Handling GET_ALL_Jocuri");
+            Iterable<Joc> jocuri;
+            synchronized (server) {
+                jocuri = server.findAllJoc();
+            }
+            return JsonProtocolUtils.createGetAllJocuriResponse(jocuri);
+        } catch (Exception e) {
+            return JsonProtocolUtils.createErrorResponse(e.getMessage());
+        }
+    }
+
+    private Response handleGetAllPozitii() {
+        logger.traceEntry("handling getAllPoz request");
+        try {
+            System.out.println("SERVER: Handling GET_ALL_POZITII");
+            Iterable<Pozitie> pozitii;
+            synchronized (server) {
+                pozitii = server.findAllPozitii();
+            }
+            return JsonProtocolUtils.createGetAllPozitiiResponse(pozitii);
+        } catch (Exception e) {
+            return JsonProtocolUtils.createErrorResponse(e.getMessage());
+        }
+    }
+
+    private Response handleSaveJoc(Request request) {
+        try {
+            server.saveJoc(request.getJoc());
+            return okResponse;
+        } catch (Exception e) {
+            return JsonProtocolUtils.createErrorResponse(e.getMessage());
+        }
+    }
+
+    private Response handleSaveConfiguratie(Request request) {
+        try {
+            Configuratie saved = server.saveConfiguratie(request.getConfig());
+            return JsonProtocolUtils.createSaveConfiguratieResponse(saved);
+        } catch (Exception e) {
+            return JsonProtocolUtils.createErrorResponse(e.getMessage());
+        }
+    }
+
+    @Override
+    public void gameAdded(Joc j) throws InterruptedException {
+        Response response = JsonProtocolUtils.createSaveGameResponse(j);
+        try {
+            sendResponse(response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -1,8 +1,8 @@
 package mpp.server;
 
 // TODO 1: IMPORT USED MODELS AND REPOSITORIES
-import mpp.model.User;
-import mpp.persistance.UserRepoInterface;
+import mpp.model.*;
+import mpp.persistance.*;
 import mpp.services.AppException;
 import mpp.services.IObserver;
 import mpp.services.IServices;
@@ -18,14 +18,20 @@ public class ServicesImpl implements IServices {
 
     // TODO 2: DEFINE/ADD REPOSITORIES
     UserRepoInterface userRepo;
+    ConfiguratieRepoInterface configRepo;
+    JocRepoInterface jocRepo;
+    PozitieRepoInterface pozRepo;
 
     private static final Logger logger = LogManager.getLogger(ServicesImpl.class);
 
     private Map<String, IObserver> loggedClients;
 
     // TODO 3: ADD REPOSITORIES TO CONSTRUCTOR
-    public ServicesImpl(UserRepoInterface userRepo) {
+    public ServicesImpl(UserRepoInterface userRepo,ConfiguratieRepoInterface configRepo, JocRepoInterface jocRepo, PozitieRepoInterface pozRepo) {
         this.userRepo = userRepo;
+        this.configRepo = configRepo;
+        this.jocRepo = jocRepo;
+        this.pozRepo = pozRepo;
         logger.info("Initializing ServicesImpl");
         loggedClients = new ConcurrentHashMap<>();
     }
@@ -40,53 +46,45 @@ public class ServicesImpl implements IServices {
         return userRepo.findAll();
     }
 
-//    @Override
-//    public Iterable<Configuratie> findAllConfiguratie() throws IOException, InterruptedException, AppException {
-//        return configRepo.findAll();
-//    }
-//
-//    @Override
-//    public Iterable<Joc> findAllJoc() throws IOException, InterruptedException, AppException {
-//        return jocRepo.findAll();
-//    }
-//
-//    @Override
-//    public Joc saveJoc(Joc joc) throws AppException, IOException, InterruptedException {
-//        Joc j = jocRepo.save(joc);
-//        notifyObservers(joc);
-//        return j;
-//    }
+    @Override
+    public Iterable<Configuratie> findAllConfiguratie() throws IOException, InterruptedException, AppException {
+        return configRepo.findAll();
+    }
 
-    // TODO 4: DON'T FORGET TO CALL THE OBSERVERS FROM CONTROLLERS/CLIENTS WHEN NEEDED (IN THE SPECIFIC METHODS THAT NEED TO NOTIFY THE CLIENTS)
+    @Override
+    public Iterable<Joc> findAllJoc() throws IOException, InterruptedException, AppException {
+        return jocRepo.findAll();
+    }
 
-//    public synchronized User login(User user, IObserver client) throws AppException {
-//        User foundUser = searchUserByName(user.getName());
-//        if (foundUser != null){
-//            if(loggedClients.get(user.getName()) != null)
-//                throw new AppException("User already logged in.");
-//            if (user.getPassword().equals(foundUser.getPassword())) {
-//                loggedClients.put(user.getName(), client);
-//            } else
-//                throw new AppException("Authentication failed.");
-//        } else
-//            throw new AppException("Authentication failed.");
-//        return user;
-//    }
-//
-//    public synchronized User searchUserByName(String name) throws AppException {
-//        Iterable<User> users = userRepository.findAll();
-//        for (User user : users) {
-//            if (user.getName().equals(name)) {
-//                return user;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    public synchronized User logout(User user, IObserver client) throws AppException {
-//        IObserver localClient = loggedClients.remove(user.getName());
-//        if (localClient == null)
-//            throw new AppException("User " + user.getName() + " is not logged in.");
-//        return user;
-//    }
+    @Override
+    public Joc saveJoc(Joc joc) throws AppException, IOException, InterruptedException {
+        Joc j = jocRepo.save(joc);
+        notifyObservers(joc);
+        return j;
+    }
+
+
+    @Override
+    public Iterable<Pozitie> findAllPozitii() throws IOException, InterruptedException, AppException {
+        return pozRepo.findAll();
+    }
+
+    @Override
+    public Configuratie saveConfiguratie(Configuratie conf) throws AppException, IOException, InterruptedException {
+        Configuratie c = configRepo.save(conf);
+        return c;
+    }
+
+    // Metoda pentru a notifica observatorii
+    public synchronized void notifyObservers(Joc j) {
+        for (IObserver observer : loggedClients.values()) {
+            try {
+                observer.gameAdded(j);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 }
