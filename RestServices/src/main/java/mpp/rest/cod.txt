@@ -1,0 +1,39 @@
+import { useState } from 'react';
+import axios from 'axios';
+
+export default function EditConfiguratie() {
+  const [form, setForm] = useState({
+    id: '',       // ID-ul configurației de modificat
+    coordonataX: '',
+    coordonataY: ''
+  });
+
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    try {
+      await axios.put(`http://localhost:55556/api/jocuri/${form.id}`, form);
+      alert('Pozitia a fost modificată cu succes!');
+    } catch (err) {
+      alert('A apărut o eroare la modificare!');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>ID Joc de modificat:</label>
+      <input type="text" name="id" value={form.id} onChange={handleChange} required />
+
+      <label>CoordonataX:</label>
+      <input type="text" name="coordonataX" value={form.coordonataX} onChange={handleChange} required />
+      <label>CoordonataY:</label>
+      <input type="text" name="coordonataY" value={form.coordonataY} onChange={handleChange} required />
+
+
+      <button type="submit">Modifică configurația</button>
+    </form>
+  );
+}
