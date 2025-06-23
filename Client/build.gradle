@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+group = 'ro.mpp2024'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':Model')
+    implementation project(':Services')
+    implementation project(':Networking')
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.0'
+    implementation 'org.openjfx:javafx-controls:23.0.2'
+    implementation 'org.openjfx:javafx-fxml:23.0.2'
+    implementation 'org.openjfx:javafx-graphics:23.0.2'
+    implementation 'org.openjfx:javafx-base:23.0.2'
+    implementation 'org.mindrot:jbcrypt:0.4'
+    implementation 'com.google.code.gson:gson:2.9.0'
+}
+javafx {
+    version = "23.0.2"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+    mainClass = 'mpp.client.StartJsonClient'
+}
+
+run {
+    jvmArgs = [
+            '--module-path', '/Users/veronicavacaras/Downloads/javafx-sdk-23.0.2/lib',
+            '--add-modules', 'javafx.controls,javafx.fxml'
+    ]
+}
+
+test {
+    useJUnitPlatform()
+}
